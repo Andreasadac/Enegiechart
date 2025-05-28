@@ -1,0 +1,15 @@
+{
+    "title": "Nettostromerzeugung Deutschland 2025 (YTD)",
+    "unit": "%",
+    "data": [
+        {
+            "label": "Erneuerbare Energien",
+            "value": 59.0
+        },
+        {
+            "label": "Fossile Energien",
+            "value": 41.0
+        }
+    ],
+    "source": "Fraunhofer ISE \u2013 Energy-Charts (https://www.energy-charts.info)"
+}
