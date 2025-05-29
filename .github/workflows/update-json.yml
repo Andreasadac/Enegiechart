@@ -1,6 +1,7 @@
 name: Update JSON
 
 on:
+  workflow_dispatch:     # ← Das erlaubt manuelles Ausführen
   schedule:
     - cron: "0 0 * * *"  # Täglich um Mitternacht UTC
 
