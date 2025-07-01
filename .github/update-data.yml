@@ -1,0 +1,32 @@
+name: Update Energy Data
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # täglich um 6:00 UTC
+  workflow_dispatch:      # manuelles Auslösen möglich
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run update script
+        run: python update_energy_data.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data.csv
+          git commit -m "Automated update of energy data"
+          git push
