@@ -1,34 +1,28 @@
-name: Tägliches Update der Energiedaten
+import json
+from datetime import datetime
 
-on:
-  schedule:
-    - cron: '0 6 * * *'  # Täglich um 6:00 UTC (8:00 Uhr München-Zeit)
-  workflow_dispatch:     # Manuelles Auslösen möglich
+# Beispielwerte für Erneuerbar und Fossil (in Prozent)
+erneuerbar_prozent = 62.5
+fossil_prozent = 37.5
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# Aktuelles Datum im gewünschten Format
+heute = datetime.today().strftime("%d.%m.%Y")
+stand_text = f"Stand: {heute}"
 
-    steps:
-      - name: Repository klonen
-        uses: actions/checkout@v3
+# Infogram-kompatible Datenstruktur
+infogram_data = {
+    "sheet1": {
+        "columns": ["Kategorie", "Wert"],
+        "rows": [
+            [stand_text, ""],
+            ["Erneuerbar", erneuerbar_prozent],
+            ["Fossil", fossil_prozent]
+        ]
+    }
+}
 
-      - name: Python einrichten
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+# JSON-Datei speichern
+with open("infogram_ready_data.json", "w", encoding="utf-8") as f:
+    json.dump(infogram_data, f, ensure_ascii=False, indent=2)
 
-      - name: Abhängigkeiten installieren (falls nötig)
-        run: |
-          pip install -r requirements.txt || true
-
-      - name: Skript ausführen
-        run: python update_energy_data.py
-
-      - name: Änderungen committen
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add infogram_ready_data.json
-          git commit -m "Automatisches Update: $(date +'%Y-%m-%d')" || echo "Keine Änderungen"
-          git push
+print("Die Datei 'infogram_ready_data.json' wurde erfolgreich erstellt.")
