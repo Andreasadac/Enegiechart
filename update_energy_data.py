@@ -1,45 +1,34 @@
-import requests
-import csv
-from datetime import datetime, timedelta
+name: Tägliches Update der Energiedaten
 
-# Datum berechnen: gestern bis heute
-today = datetime.utcnow().date()
-yesterday = today - timedelta(days=1)
-start = yesterday.isoformat()
-end = today.isoformat()
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Täglich um 6:00 UTC (8:00 Uhr München-Zeit)
+  workflow_dispatch:     # Manuelles Auslösen möglich
 
-# API-Endpunkt
-url = f"https://api.energy-charts.info/power_trend?country=DE&start={start}&end={end}"
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-# Daten abrufen
-response = requests.get(url)
-data = response.json()
+    steps:
+      - name: Repository klonen
+        uses: actions/checkout@v3
 
-# Energiequellen definieren
-fossil_sources = {'hard_coal', 'lignite', 'natural_gas', 'oil', 'other_fossil'}
-renewable_sources = {'solar', 'wind_onshore', 'wind_offshore', 'biomass', 'hydro', 'geothermal'}
+      - name: Python einrichten
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-# Summen berechnen
-fossil_sum = 0
-renewable_sum = 0
-total_sum = 0
+      - name: Abhängigkeiten installieren (falls nötig)
+        run: |
+          pip install -r requirements.txt || true
 
-for entry in data['data']:
-    source = entry['source']
-    values = [v[1] for v in entry['values']]
-    avg = sum(values) / len(values) if values else 0
-    total_sum += avg
-    if source in fossil_sources:
-        fossil_sum += avg
-    elif source in renewable_sources:
-        renewable_sum += avg
+      - name: Skript ausführen
+        run: python update_energy_data.py
 
-# Prozentwerte berechnen
-fossil_percent = (fossil_sum / total_sum) * 100 if total_sum else 0
-renewable_percent = (renewable_sum / total_sum) * 100 if total_sum else 0
-
-# CSV schreiben
-with open('data.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(['Date', 'Fossil (%)', 'Renewable (%)'])
-    writer.writerow([start, f"{fossil_percent:.2f}", f"{renewable_percent:.2f}"])
+      - name: Änderungen committen
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add infogram_ready_data.json
+          git commit -m "Automatisches Update: $(date +'%Y-%m-%d')" || echo "Keine Änderungen"
+          git push
