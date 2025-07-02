@@ -2,7 +2,7 @@
   "sheet1": {
     "columns": ["Kategorie", "Wert"],
     "rows": [
-      ["Stand: 2025-07-02", ""],
+      ["Stand: 02.07.2025", ""],
       ["Erneuerbar", 62.5],
       ["Fossil", 37.5]
     ]
